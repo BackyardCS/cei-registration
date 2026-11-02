@@ -761,6 +761,7 @@
     // 401 / 404 / 5xx and anything else unexpected — never an issue the
     // applicant can fix themselves, so keep the message generic and log
     // the technical detail for us to look at instead of showing it.
+    // new comment for updates only.
     console.error('Webhook submission failed:', response.status, body);
     showBanner('حدث خطأ غير متوقع أثناء إرسال طلبك. يرجى المحاولة مرة أخرى بعد قليل، أو التواصل معنا على info@cei.edu.sa إذا تكرر الخطأ.');
   });
