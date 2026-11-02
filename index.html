@@ -416,8 +416,8 @@
           سنرشّحك للمسار الأنسب بين اختياريك بعد التقييم والمقابلة.
         </p>
 
-        <div class="field" data-required data-type="file" style="margin-top:24px">
-          <label class="lbl" for="cv">السيرة الذاتية</label>
+        <div class="field" data-type="file" style="margin-top:24px">
+          <label class="lbl" for="cv">السيرة الذاتية (اختياري)</label>
           <label class="drop" id="drop" for="cv">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg>
             <strong id="dropTitle">اسحب ملف السيرة الذاتية هنا أو اختر ملفاً</strong>
@@ -658,6 +658,7 @@
   async function submitToWebhook() {
     const fd = new FormData(form);
     fd.delete('terms'); // consent checkbox — not part of the webhook contract
+    if (!cvInput.files.length) fd.delete('cv'); // optional — strip the empty file entry when none was chosen
 
     // Server expects E.164-ish phone; the visible input only holds the
     // local 9-digit part (the +966 is a static prefix shown next to it).
