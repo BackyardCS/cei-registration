@@ -475,6 +475,16 @@
     513: 'primary_track', 514: 'secondary_track', 504: 'cv',
   };
 
+  // The backend's own validation messages come back in English; translate
+  // the ones we know can reach the applicant so the form stays all-Arabic.
+  const SERVER_MESSAGE_AR = {
+    'This mobile number is already in use.': 'رقم الجوال هذا مستخدم بالفعل.',
+    'This email is already in use.': 'البريد الإلكتروني هذا مستخدم بالفعل.',
+  };
+  function translateServerMessage(message) {
+    return SERVER_MESSAGE_AR[message] || message;
+  }
+
   const form = document.getElementById('regForm');
   const submitBtn = document.getElementById('submitBtn');
   const banner = document.getElementById('banner');
@@ -583,7 +593,7 @@
     const wrapper = fieldWrapperFor(key);
     if (!wrapper) return false;
     const msgEl = wrapper.querySelector('.error-msg');
-    if (msgEl) msgEl.textContent = message;
+    if (msgEl) msgEl.textContent = translateServerMessage(message);
     markInvalid(wrapper, true);
     return true;
   }
@@ -756,7 +766,7 @@
       if (matchedAny && firstInvalid) {
         firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } else {
-        showBanner(error.error_msg || 'تعذّر إرسال الطلب. يرجى مراجعة الحقول والمحاولة مرة أخرى.');
+        showBanner(error.error_msg ? translateServerMessage(error.error_msg) : 'تعذّر إرسال الطلب. يرجى مراجعة الحقول والمحاولة مرة أخرى.');
       }
       return;
     }
