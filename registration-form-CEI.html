@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سجّل في البرنامج</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #141a17;
+    --green: #5a9a74;
+    --green-dark: #4a8663;
+    --green-soft: #eef6ef;
+    --green-badge: #cfeccd;
+    --green-badge-text: #2f6a46;
+    --green-line: #8fd3a0;
+    --gold: #a88a3a;
+    --text: #1d2420;
+    --muted: #7a827d;
+    --field-bg: #f3f5f4;
+    --field-border: #e3e7e4;
+    --divider: #eceeed;
+    --white: #ffffff;
+    --error: #c44b4b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "IBM Plex Sans Arabic", system-ui, sans-serif;
+    background:
+      radial-gradient(ellipse 900px 600px at 100% 0%, rgba(58, 110, 78, 0.45), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 112px 100px;
+  }
+  .layout {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 440px 1fr;
+    gap: 64px;
+    align-items: start;
+  }
+
+  /* ---------- Info panel ---------- */
+  .info { color: #e9eeea; }
+  .accent-line { width: 48px; height: 3px; background: var(--green-line); border-radius: 2px; margin-bottom: 28px; }
+  .info h1 { font-size: 52px; font-weight: 700; line-height: 1.25; color: #fff; margin-bottom: 24px; }
+  .info .lead { font-size: 17px; line-height: 1.85; color: #b9c2bc; font-weight: 300; }
+  .deadline {
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-top: 24px; padding: 12px 18px;
+    border: 1px solid var(--gold); border-radius: 12px;
+    background: rgba(168, 138, 58, 0.08);
+    color: #ece3c9; font-size: 14px;
+  }
+  .deadline svg { flex-shrink: 0; color: #e7d9a8; }
+  .info hr { border: none; border-top: 1px solid rgba(255,255,255,0.09); margin: 24px 0 28px; }
+  .info h2 { font-size: 21px; font-weight: 600; color: #fff; margin-bottom: 18px; }
+  .steps { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+  .steps li { display: flex; align-items: center; gap: 14px; font-size: 15px; color: #c6cec8; font-weight: 300; }
+  .step-num {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    background: var(--green-badge); color: var(--green-badge-text);
+    display: grid; place-items: center; font-size: 14px; font-weight: 500;
+  }
+  .contact { margin-top: 32px; font-size: 13px; color: #8c958f; }
+  .contact a { color: #8c958f; text-decoration: none; }
+  .contact a:hover { color: #c6cec8; }
+
+  /* ---------- Card ---------- */
+  .card { background: var(--white); border-radius: 24px; padding: 40px 36px 36px; }
+  .card-head { padding-bottom: 22px; border-bottom: 1px solid var(--divider); }
+  .card-head h2 { font-size: 26px; font-weight: 600; }
+  .card-head p { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+  section { padding: 20px 0 24px; border-bottom: 1px solid var(--divider); }
+  section:last-of-type { border-bottom: none; }
+  .section-title { display: flex; align-items: center; gap: 12px; font-size: 21px; font-weight: 600; margin-bottom: 18px; }
+  .section-title .step-num { width: 28px; height: 28px; font-size: 13px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 16px; }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field.full { grid-column: 1 / -1; }
+  label.lbl { font-size: 13px; font-weight: 500; color: #3a423d; }
+
+  .input, .select-wrap select {
+    width: 100%; height: 52px;
+    background: var(--field-bg);
+    border: 1px solid var(--field-border);
+    border-radius: 10px;
+    padding: 0 16px;
+    font: inherit; font-size: 15px; color: var(--text);
+    outline: none;
+    transition: border-color .15s, background .15s, box-shadow .15s;
+  }
+  .input::placeholder { color: #a6ada8; }
+  .input:focus, .select-wrap select:focus {
+    border-color: var(--green); background: #fff;
+    box-shadow: 0 0 0 3px rgba(90,154,116,0.15);
+  }
+  .input[type="email"], .phone input { direction: ltr; text-align: right; }
+
+  .select-wrap { position: relative; }
+  .select-wrap select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-left: 44px; color: #a6ada8; }
+  .select-wrap select.has-value { color: var(--text); }
+  .select-wrap svg { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #5d6560; }
+  .select-wrap.chosen select { background: #fff; border-color: var(--green); color: var(--text); }
+
+  .phone {
+    display: flex; align-items: center; direction: ltr;
+    height: 52px; background: var(--field-bg);
+    border: 1px solid var(--field-border); border-radius: 10px;
+    transition: border-color .15s, background .15s, box-shadow .15s;
+  }
+  .phone:focus-within { border-color: var(--green); background: #fff; box-shadow: 0 0 0 3px rgba(90,154,116,0.15); }
+  .phone .code { padding: 0 8px 0 16px; font-size: 15px; font-weight: 500; border-right: 1px solid var(--field-border); line-height: 22px; }
+  .phone input { flex: 1; height: 100%; border: none; background: transparent; outline: none; padding: 0 8px; font: inherit; font-size: 15px; text-align: left; }
+  .phone input::placeholder { color: #a6ada8; letter-spacing: .5px; }
+
+  /* Radio cards */
+  .radios { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .radio-card { position: relative; cursor: pointer; }
+  .radio-card input { position: absolute; opacity: 0; pointer-events: none; }
+  .radio-card span {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    height: 58px; border: 1px solid var(--field-border); border-radius: 10px;
+    font-size: 15px; transition: all .15s;
+  }
+  .radio-card span::before {
+    content: ""; width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid #9aa29d; box-sizing: border-box; transition: all .15s;
+  }
+  .radio-card:hover span { border-color: #c5d6ca; }
+  .radio-card input:checked + span { background: var(--green-soft); border-color: var(--green); }
+  .radio-card input:checked + span::before { border-color: #2f4f3b; border-width: 1.5px; box-shadow: inset 0 0 0 3.5px #fff, inset 0 0 0 10px #2f4f3b; }
+  .radio-card input:focus-visible + span { box-shadow: 0 0 0 3px rgba(90,154,116,0.25); }
+
+  .hint { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-top: 12px; }
+  .hint svg { flex-shrink: 0; }
+
+  /* Upload */
+  .drop {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    min-height: 134px; padding: 20px;
+    background: #f6f8f7; border: 1.5px dashed #a9c9b4; border-radius: 12px;
+    cursor: pointer; text-align: center; transition: all .15s;
+  }
+  .drop:hover, .drop.drag { background: var(--green-soft); border-color: var(--green); }
+  .drop svg { color: var(--green); }
+  .drop strong { font-size: 15px; font-weight: 500; }
+  .drop small { font-size: 13px; color: var(--muted); }
+  .drop.has-file strong { color: var(--green-dark); }
+  #cv { display: none; }
+
+  /* Terms */
+  .terms { display: flex; align-items: center; gap: 10px; margin-top: 4px; font-size: 14px; color: #3a423d; cursor: pointer; }
+  .terms input { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid #9aa29d; display: grid; place-items: center; cursor: pointer; flex-shrink: 0; }
+  .terms input:checked { background: var(--green); border-color: var(--green); }
+  .terms input:checked::after { content: ""; width: 5px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, -1px); }
+
+  .submit {
+    width: 100%; height: 56px; margin-top: 22px;
+    border: none; border-radius: 28px;
+    background: var(--green); color: #fff;
+    font: inherit; font-size: 16px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(90,154,116,0.28);
+    transition: background .15s, transform .1s;
+  }
+  .submit:hover { background: var(--green-dark); }
+  .submit:active { transform: translateY(1px); }
+
+  /* Validation */
+  .error-msg { font-size: 12px; color: var(--error); display: none; }
+  .invalid .error-msg { display: block; }
+  .invalid .input, .invalid .phone, .invalid select, .invalid .drop { border-color: var(--error) !important; }
+  .invalid.radios-field .radio-card span { border-color: var(--error); }
+  .terms.invalid input { border-color: var(--error); }
+
+  .banner {
+    display: none; align-items: flex-start; gap: 10px;
+    padding: 14px 16px; margin-bottom: 20px;
+    border-radius: 10px; font-size: 14px; line-height: 1.7;
+  }
+  .banner.show { display: flex; }
+  .banner.error { background: #fbebeb; border: 1px solid #e9b8b8; color: #8a3030; }
+  .banner.info { background: var(--green-soft); border: 1px solid var(--green-line); color: #2f4f3b; }
+  .banner svg { flex-shrink: 0; margin-top: 2px; }
+
+  .submit[disabled] { opacity: .65; cursor: not-allowed; }
+  .submit .spinner {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+    animation: spin .7s linear infinite; display: none;
+  }
+  .submit[disabled] .spinner { display: inline-block; }
+  .submit[disabled] .submit-label { opacity: .85; }
+  .submit[disabled] .submit-arrow { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .success {
+    display: none; text-align: center; padding: 60px 20px;
+  }
+  .success .icon { width: 64px; height: 64px; border-radius: 50%; background: var(--green-badge); color: var(--green-badge-text); display: grid; place-items: center; margin: 0 auto 20px; }
+  .success h3 { font-size: 24px; margin-bottom: 10px; }
+  .success p { color: var(--muted); font-size: 15px; line-height: 1.8; }
+
+  @media (max-width: 1100px) {
+    body { padding: 56px 32px; }
+    .layout { grid-template-columns: 1fr; gap: 40px; }
+  }
+  @media (max-width: 640px) {
+    body { padding: 32px 16px; }
+    .info h1 { font-size: 38px; }
+    .card { padding: 28px 20px; border-radius: 20px; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .radios { grid-template-columns: 1fr; }
+    .deadline { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Info panel (right side in RTL) -->
+  <aside class="info">
+    <div class="accent-line"></div>
+    <h1>سجّل في البرنامج</h1>
+    <p class="lead">أكمل النموذج في دقائق — ثلاث خطوات قصيرة. وسنراجع طلبك ونتواصل معك لتحديد موعد التقييم والمقابلة.</p>
+
+    <div class="deadline">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+      آخر موعد للتقديم: 14 أكتوبر 2026 · مقاعد محدودة لكل مسار
+    </div>
+
+    <hr>
+
+    <h2>ماذا يحدث بعد التسجيل؟</h2>
+    <ol class="steps">
+      <li><span class="step-num">1</span>نراجع طلبك ونتحقق من استيفاء الشروط.</li>
+      <li><span class="step-num">2</span>ندعوك للتقييم والمقابلة الشخصية.</li>
+      <li><span class="step-num">3</span>نرشّحك للمسار الأنسب ونطابقك مع شريك التدريب.</li>
+    </ol>
+
+    <p class="contact">لديك سؤال؟ راسلنا على <a href="mailto:info@cei.edu.sa">info@cei.edu.sa</a></p>
+  </aside>
+
+  <!-- Form card -->
+  <main class="card">
+    <div class="card-head">
+      <h2>نموذج التسجيل</h2>
+      <p>جميع الحقول مطلوبة</p>
+    </div>
+
+    <div class="banner error" id="banner" role="alert">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+      <span id="bannerText"></span>
+    </div>
+
+    <form id="regForm" novalidate>
+
+      <!-- Section 1 -->
+      <section>
+        <div class="section-title"><span class="step-num">1</span>البيانات الشخصية</div>
+        <div class="grid-2">
+          <div class="field" data-required data-min-length="2">
+            <label class="lbl" for="full_name">الاسم الكامل</label>
+            <input class="input" id="full_name" name="full_name" type="text" maxlength="50" placeholder="اكتب اسمك كما في الهوية">
+            <span class="error-msg">يرجى إدخال الاسم الكامل (حرفان على الأقل)</span>
+          </div>
+          <div class="field" data-required data-type="email">
+            <label class="lbl" for="email">البريد الإلكتروني</label>
+            <input class="input" id="email" name="email" type="email" placeholder="name@example.com">
+            <span class="error-msg">يرجى إدخال بريد إلكتروني صحيح</span>
+          </div>
+          <div class="field" data-required data-type="phone">
+            <label class="lbl" for="phone">رقم الجوال</label>
+            <div class="phone">
+              <span class="code">+966</span>
+              <input id="phone" name="phone" type="tel" inputmode="numeric" placeholder="5X XXX XXXX" maxlength="11">
+            </div>
+            <span class="error-msg">يرجى إدخال رقم جوال صحيح يبدأ بـ 5</span>
+          </div>
+          <div class="field" data-required>
+            <label class="lbl" for="nationality">الجنسية</label>
+            <div class="select-wrap">
+              <select id="nationality" name="nationality">
+                <option value="" selected disabled>اختر الجنسية</option>
+                <option>سعودي</option>
+                <option>إماراتي</option>
+                <option>كويتي</option>
+                <option>بحريني</option>
+                <option>قطري</option>
+                <option>عُماني</option>
+                <option>مصري</option>
+                <option>أردني</option>
+                <option>أخرى</option>
+              </select>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <span class="error-msg">يرجى اختيار الجنسية</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2 -->
+      <section>
+        <div class="section-title"><span class="step-num">2</span>المؤهل الدراسي</div>
+        <div class="grid-2">
+          <div class="field" data-required>
+            <label class="lbl" for="education_level">آخر مؤهل علمي</label>
+            <div class="select-wrap">
+              <select id="education_level" name="education_level">
+                <option value="" selected disabled>ثانوي، دبلوم، بكالوريوس...</option>
+                <option>ثانوي</option>
+                <option>دبلوم</option>
+                <option>بكالوريوس</option>
+                <option>ماجستير</option>
+                <option>دكتوراه</option>
+              </select>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <span class="error-msg">يرجى اختيار المؤهل</span>
+          </div>
+          <div class="field" data-required data-min-length="20">
+            <label class="lbl" for="institution">اسم الجامعة أو المؤسسة التعليمية</label>
+            <input class="input" id="institution" name="institution" type="text" placeholder="اكتب الاسم الكامل للجهة التعليمية">
+            <span class="error-msg">يرجى إدخال اسم الجهة التعليمية الكامل (٢٠ حرفاً على الأقل)</span>
+          </div>
+          <!-- <div class="field" data-required>
+            <label class="lbl" for="college">الكلية</label>
+            <input class="input" id="college" name="college" type="text" placeholder="مثال: كلية التصاميم والفنون">
+            <span class="error-msg">يرجى إدخال الكلية</span>
+          </div> -->
+          <div class="field" data-required>
+            <label class="lbl" for="major">التخصص الدراسي</label>
+            <input class="input" id="major" name="major" type="text" placeholder="مثال: التصميم الداخلي">
+            <span class="error-msg">يرجى إدخال التخصص</span>
+          </div>
+
+          <div class="field full radios-field" data-required data-type="radio" data-name="english_level">
+            <label class="lbl">مستوى اللغة الإنجليزية</label>
+            <div class="radios">
+              <label class="radio-card"><input type="radio" name="english_level" value="beginner"><span>مبتدئ</span></label>
+              <label class="radio-card"><input type="radio" name="english_level" value="intermediate" checked><span>متوسط</span></label>
+              <label class="radio-card"><input type="radio" name="english_level" value="advanced"><span>متقدم</span></label>
+            </div>
+            <span class="error-msg">يرجى اختيار مستوى اللغة</span>
+          </div>
+
+          <div class="field full radios-field" data-required data-type="radio" data-name="fresh_graduate">
+            <label class="lbl">هل أنت خريج حديث وليس لديك خبرة عمل سابقة؟</label>
+            <div class="radios" style="grid-template-columns: repeat(2, 1fr)">
+              <label class="radio-card"><input type="radio" name="fresh_graduate" value="yes"><span>نعم</span></label>
+              <label class="radio-card"><input type="radio" name="fresh_graduate" value="no" checked><span>لا</span></label>
+            </div>
+            <span class="error-msg">يرجى الاختيار</span>
+          </div>
+
+          <div class="field full radios-field" data-required data-type="radio" data-name="gosi_registered">
+            <label class="lbl">هل أنت مسجّل في التأمينات الاجتماعية (GOSI)؟</label>
+            <div class="radios" style="grid-template-columns: repeat(2, 1fr)">
+              <label class="radio-card"><input type="radio" name="gosi_registered" value="yes"><span>نعم</span></label>
+              <label class="radio-card"><input type="radio" name="gosi_registered" value="no" checked><span>لا</span></label>
+            </div>
+            <span class="error-msg">يرجى الاختيار</span>
+          </div>
+        </div>
+        <p class="hint">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+          اختر مستواك التقريبي — قد يُطلب منك اختبار تحديد مستوى خلال مرحلة التقييم.
+        </p>
+      </section>
+
+      <!-- Section 3 -->
+      <section>
+        <div class="section-title"><span class="step-num">3</span>المسار والسيرة الذاتية</div>
+        <div class="grid-2">
+          <div class="field" data-required>
+            <label class="lbl" for="primary_track">المسار الرئيسي</label>
+            <div class="select-wrap">
+              <select id="primary_track" name="primary_track">
+                <option value="" disabled>اختر المسار الرئيسي</option>
+                <option selected>إدارة المشاريع الثقافية</option>
+                <option>تصميم التجارب</option>
+                <option>إدارة الفعاليات</option>
+                <option>التسويق الثقافي</option>
+                <option>الإنتاج الإبداعي</option>
+              </select>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <span class="error-msg">يرجى اختيار المسار الرئيسي</span>
+          </div>
+          <div class="field" data-required data-type="secondary">
+            <label class="lbl" for="secondary_track">المسار الثانوي</label>
+            <div class="select-wrap">
+              <select id="secondary_track" name="secondary_track">
+                <option value="" disabled>اختر المسار الثانوي</option>
+                <option>إدارة المشاريع الثقافية</option>
+                <option selected>تصميم التجارب</option>
+                <option>إدارة الفعاليات</option>
+                <option>التسويق الثقافي</option>
+                <option>الإنتاج الإبداعي</option>
+              </select>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <span class="error-msg">يرجى اختيار مسار مختلف عن المسار الرئيسي</span>
+          </div>
+        </div>
+        <p class="hint">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+          سنرشّحك للمسار الأنسب بين اختياريك بعد التقييم والمقابلة.
+        </p>
+
+        <div class="field" data-required data-type="file" style="margin-top:24px">
+          <label class="lbl" for="cv">السيرة الذاتية</label>
+          <label class="drop" id="drop" for="cv">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg>
+            <strong id="dropTitle">اسحب ملف السيرة الذاتية هنا أو اختر ملفاً</strong>
+            <small id="dropSub">PDF فقط — حتى 25 ميجابايت</small>
+          </label>
+          <input type="file" id="cv" name="cv" accept=".pdf,application/pdf">
+          <span class="error-msg" id="cvError">يرجى إرفاق السيرة الذاتية</span>
+        </div>
+      </section>
+
+      <label class="terms" id="termsLabel">
+        <input type="checkbox" id="terms" name="terms" checked>
+        أقرّ بأنني أستوفي شروط القبول وأن جميع البيانات المدخلة صحيحة.
+      </label>
+
+      <button type="submit" class="submit" id="submitBtn">
+        <span class="submit-label">إرسال طلب التسجيل</span>
+        <svg class="submit-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+
+    <div class="success" id="success">
+      <div class="icon">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <h3>تم استلام طلبك بنجاح</h3>
+      <p>شكراً لتسجيلك. سنراجع طلبك ونتواصل معك قريباً لتحديد موعد التقييم والمقابلة.</p>
+    </div>
+  </main>
+</div>
+
+<script>
+  // ---------------------------------------------------------------------
+  // Webhook config.
+  //
+  // SECURITY NOTE (explicitly accepted, not an oversight): X-API-Key is a
+  // per-link shared secret meant for server-to-server calls. Embedding it
+  // here means anyone who views this page's source can read it and submit
+  // fake registrations through it indefinitely — the webhook has no rate
+  // limiting. Accepted tradeoff for this integration; rotate the key
+  // (POST .../webhook-key/) if it ever needs to be invalidated.
+  // ---------------------------------------------------------------------
+  const WEBHOOK_URL = 'https://dev-api.hackyard.io/api/formbuilder/external/links/115b1812-f95f-48f8-bb1d-81a438ecd2e4/webhook/';
+  const WEBHOOK_API_KEY = '7ER-pdiloc0esm_AfK3L51B6PEJt0t4j5gz9v6XWhX8';
+
+  // Hackyard FormField id -> our contract key, for server-side validation
+  // errors that come back keyed by internal field id (SubmissionService),
+  // as opposed to transform-stage errors which come back keyed by the
+  // contract key itself (ImportService._transform_record).
+  const FIELD_ID_TO_KEY = {
+    506: 'email', 503: 'full_name', 500: 'nationality', 509: 'phone',
+    501: 'education_level', 502: 'fresh_graduate', 511: 'english_level',
+    512: 'gosi_registered', 507: 'major', 510: 'institution',
+    513: 'primary_track', 514: 'secondary_track', 504: 'cv',
+  };
+
+  const form = document.getElementById('regForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const banner = document.getElementById('banner');
+  const bannerText = document.getElementById('bannerText');
+  const success = document.getElementById('success');
+  const cvInput = document.getElementById('cv');
+  const drop = document.getElementById('drop');
+  const dropTitle = document.getElementById('dropTitle');
+  const dropSub = document.getElementById('dropSub');
+  const cvError = document.getElementById('cvError');
+  const MAX_SIZE = 25 * 1024 * 1024;
+
+  // Select styling (placeholder grey vs chosen value)
+  document.querySelectorAll('.select-wrap select').forEach(sel => {
+    const update = () => {
+      sel.classList.toggle('has-value', !!sel.value);
+      sel.parentElement.classList.toggle('chosen', !!sel.value && ['primary_track', 'secondary_track'].includes(sel.id));
+    };
+    sel.addEventListener('change', update);
+    update();
+  });
+
+  // Phone: digits only, formatted 5X XXX XXXX
+  const phone = document.getElementById('phone');
+  phone.addEventListener('input', () => {
+    const d = phone.value.replace(/\D/g, '').slice(0, 9);
+    let out = d.slice(0, 2);
+    if (d.length > 2) out += ' ' + d.slice(2, 5);
+    if (d.length > 5) out += ' ' + d.slice(5, 9);
+    phone.value = out;
+  });
+
+  // File handling — PDF only, 25MB (matches the live form field's own limit)
+  function setFile(file) {
+    if (!file) return;
+    const ok = /\.pdf$/i.test(file.name) || file.type === 'application/pdf';
+    if (!ok) { cvError.textContent = 'صيغة الملف غير مدعومة — PDF فقط'; markInvalid(cvInput.closest('.field'), true); return; }
+    if (file.size > MAX_SIZE) { cvError.textContent = 'حجم الملف يتجاوز 25 ميجابايت'; markInvalid(cvInput.closest('.field'), true); return; }
+    const dt = new DataTransfer(); dt.items.add(file); cvInput.files = dt.files;
+    drop.classList.add('has-file');
+    dropTitle.textContent = file.name;
+    dropSub.textContent = (file.size / 1024 / 1024).toFixed(2) + ' ميجابايت — اضغط لتغيير الملف';
+    markInvalid(cvInput.closest('.field'), false);
+  }
+  cvInput.addEventListener('change', () => setFile(cvInput.files[0]));
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
+  drop.addEventListener('drop', e => setFile(e.dataTransfer.files[0]));
+
+  function markInvalid(field, bad) { field.classList.toggle('invalid', bad); }
+
+  function validateField(field) {
+    const type = field.dataset.type;
+    let valid = true;
+    if (type === 'radio') {
+      valid = !!form.querySelector(`input[name="${field.dataset.name}"]:checked`);
+    } else if (type === 'file') {
+      valid = cvInput.files.length > 0;
+      if (!valid) cvError.textContent = 'يرجى إرفاق السيرة الذاتية';
+    } else {
+      const el = field.querySelector('input, select');
+      const v = (el.value || '').trim();
+      valid = v.length > 0;
+      if (valid && type === 'email') valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      if (valid && type === 'phone') valid = /^5\d{8}$/.test(v.replace(/\s/g, ''));
+      if (valid && type === 'secondary') valid = v !== document.getElementById('primary_track').value;
+      if (valid && field.dataset.minLength) valid = v.length >= parseInt(field.dataset.minLength, 10);
+    }
+    markInvalid(field, !valid);
+    return valid;
+  }
+
+  // Clear errors as the user fixes things
+  form.querySelectorAll('[data-required]').forEach(field => {
+    field.addEventListener('input', () => field.classList.contains('invalid') && validateField(field));
+    field.addEventListener('change', () => field.classList.contains('invalid') && validateField(field));
+  });
+
+  // ---------------------------------------------------------------------
+  // Banner (page-level errors that aren't about one specific field)
+  // ---------------------------------------------------------------------
+  function showBanner(message, kind) {
+    banner.classList.remove('error', 'info');
+    banner.classList.add(kind || 'error', 'show');
+    bannerText.textContent = message;
+    banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function hideBanner() {
+    banner.classList.remove('show');
+  }
+
+  // Finds the .field wrapper for a contract key, whether it's a plain
+  // input/select (id === key) or a radio group (data-name === key).
+  function fieldWrapperFor(key) {
+    const radioField = form.querySelector(`[data-name="${key}"]`);
+    if (radioField) return radioField;
+    const el = document.getElementById(key);
+    return el ? el.closest('.field') : null;
+  }
+
+  // Writes a server-provided message into a field's existing error-msg
+  // span and marks it invalid, reusing the same visual pattern as client
+  // validation. Returns false if no matching field was found so the
+  // caller can fall back to the banner instead of silently dropping it.
+  function showServerFieldError(key, message) {
+    const wrapper = fieldWrapperFor(key);
+    if (!wrapper) return false;
+    const msgEl = wrapper.querySelector('.error-msg');
+    if (msgEl) msgEl.textContent = message;
+    markInvalid(wrapper, true);
+    return true;
+  }
+
+  function setLoading(isLoading) {
+    submitBtn.disabled = isLoading;
+  }
+
+  // ---------------------------------------------------------------------
+  // 409 (already registered) — mirrors GuestEventRegistrationService
+  // .resolve_email_state's exact state machine (events/services.py) so the
+  // applicant gets a precise, reassuring answer instead of one generic
+  // "conflict" message and a dead end.
+  // ---------------------------------------------------------------------
+  const CONTACT_LINE = ' يسعدنا تواصلك معنا على info@cei.edu.sa.';
+
+  function describeConflict(data) {
+    const status = data.registration_status;
+
+    if (status === 'rejected') {
+      return {
+        kind: 'error',
+        message: 'نأسف، تمت مراجعة طلبك سابقاً لهذا البرنامج ولم يُقبل، ولا يمكن التقديم مرة أخرى بنفس البريد الإلكتروني.' + CONTACT_LINE,
+      };
+    }
+    if (status === 'withdrawn') {
+      return {
+        kind: 'error',
+        message: 'تم سحب تسجيلك السابق لهذا البرنامج.' + CONTACT_LINE,
+      };
+    }
+    if (status === 'pending') {
+      return {
+        kind: 'info',
+        message: 'طلبك مسجَّل بالفعل وهو الآن قيد المراجعة — لا حاجة لإرسال طلب جديد. سنتواصل معك على بريدك الإلكتروني المسجَّل حال انتهاء المراجعة.',
+      };
+    }
+    if (status === 'approved' || status === 'confirmed_by_system') {
+      return {
+        kind: 'info',
+        message: 'أنت مسجَّل بالفعل في هذا البرنامج ✓ — لا حاجة لإرسال طلب جديد. يرجى مراجعة بريدك الإلكتروني لمعرفة الخطوات التالية.',
+      };
+    }
+    if (status === 'invited') {
+      return {
+        kind: 'info',
+        message: 'لديك دعوة سابقة للانضمام إلى هذا البرنامج بانتظار ردّك. يرجى تسجيل الدخول إلى حسابك لقبولها.' + CONTACT_LINE,
+      };
+    }
+    if (data.account_exists && !data.registration_exists && data.can_resubmit) {
+      // Account exists in Hackyard already, but no application for this program yet.
+      return {
+        kind: 'info',
+        message: 'يوجد حساب مسجَّل بهذا البريد الإلكتروني في Hackyard، ولكن لم نجد طلب تسجيل لهذا البرنامج بعد. يرجى تسجيل الدخول إلى حسابك لإكمال التسجيل.' + CONTACT_LINE,
+      };
+    }
+    if (data.account_exists || data.registration_exists) {
+      // Covers B7 (participant without a visible ER row) and A3 (registration
+      // row exists before an account does) — both mean "already in", just
+      // reached through a different path than the status branches above.
+      return {
+        kind: 'info',
+        message: 'يوجد طلب تسجيل سابق مرتبط بهذا البريد الإلكتروني لهذا البرنامج — لا حاجة لإرسال طلب جديد.' + CONTACT_LINE,
+      };
+    }
+    return {
+      kind: 'error',
+      message: 'تعذّر إكمال التسجيل بسبب تعارض في البيانات.' + CONTACT_LINE,
+    };
+  }
+
+  async function submitToWebhook() {
+    const fd = new FormData(form);
+    fd.delete('terms'); // consent checkbox — not part of the webhook contract
+
+    // Server expects E.164-ish phone; the visible input only holds the
+    // local 9-digit part (the +966 is a static prefix shown next to it).
+    fd.set('phone', '+966' + phone.value.replace(/\D/g, ''));
+
+    return fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'X-API-Key': WEBHOOK_API_KEY }, // do NOT set Content-Type — the browser sets the multipart boundary
+      body: fd,
+    });
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    hideBanner();
+
+    let firstBad = null;
+    form.querySelectorAll('[data-required]').forEach(field => {
+      if (!validateField(field) && !firstBad) firstBad = field;
+    });
+    const terms = document.getElementById('terms');
+    const termsLabel = document.getElementById('termsLabel');
+    termsLabel.classList.toggle('invalid', !terms.checked);
+    if (!terms.checked && !firstBad) firstBad = termsLabel;
+
+    if (firstBad) {
+      firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const focusable = firstBad.querySelector('input:not([type=file]), select');
+      if (focusable) setTimeout(() => focusable.focus({ preventScroll: true }), 300);
+      return;
+    }
+
+    setLoading(true);
+    let response, body;
+    try {
+      response = await submitToWebhook();
+      try { body = await response.json(); } catch (_) { body = null; }
+    } catch (networkErr) {
+      setLoading(false);
+      showBanner('تعذّر الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.');
+      console.error('Webhook network error:', networkErr);
+      return;
+    }
+
+    if (response.status === 201) {
+      form.style.display = 'none';
+      hideBanner();
+      success.style.display = 'block';
+      success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return; // leave the button disabled — the form is gone
+    }
+
+    setLoading(false);
+    const error = body && body.error ? body.error : {};
+
+    if (response.status === 400) {
+      const regErrors = error.field_errors && error.field_errors.registration_data;
+      let firstInvalid = null;
+      let matchedAny = false;
+
+      if (Array.isArray(regErrors)) {
+        // Transform-stage errors: [{ field: '<contract key>', error: '...' }, ...]
+        regErrors.forEach(item => {
+          if (showServerFieldError(item.field, item.error)) {
+            matchedAny = true;
+            firstInvalid = firstInvalid || fieldWrapperFor(item.field);
+          }
+        });
+      } else if (regErrors && typeof regErrors === 'object') {
+        // Submission-validation errors: { '<field_id>': ['message', ...] }
+        Object.entries(regErrors).forEach(([fieldId, messages]) => {
+          const key = FIELD_ID_TO_KEY[Number(fieldId)];
+          const message = Array.isArray(messages) ? messages[0] : String(messages);
+          if (key && showServerFieldError(key, message)) {
+            matchedAny = true;
+            firstInvalid = firstInvalid || fieldWrapperFor(key);
+          }
+        });
+      }
+
+      if (matchedAny && firstInvalid) {
+        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        showBanner(error.error_msg || 'تعذّر إرسال الطلب. يرجى مراجعة الحقول والمحاولة مرة أخرى.');
+      }
+      return;
+    }
+
+    if (response.status === 409) {
+      const conflict = body && body.data ? body.data : {};
+      const described = describeConflict(conflict);
+      showBanner(described.message, described.kind);
+      return;
+    }
+
+    if (response.status === 403) {
+      showBanner('التسجيل في هذا البرنامج مغلق حالياً أو غير متاح. يرجى التواصل معنا على info@cei.edu.sa.');
+      return;
+    }
+
+    // 401 / 404 / 5xx and anything else unexpected — never an issue the
+    // applicant can fix themselves, so keep the message generic and log
+    // the technical detail for us to look at instead of showing it.
+    console.error('Webhook submission failed:', response.status, body);
+    showBanner('حدث خطأ غير متوقع أثناء إرسال طلبك. يرجى المحاولة مرة أخرى بعد قليل، أو التواصل معنا على info@cei.edu.sa إذا تكرر الخطأ.');
+  });
+</script>
+</body>
+</html>
