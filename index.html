@@ -739,6 +739,20 @@
         });
       }
 
+      // Top-level field errors outside registration_data — e.g. uniqueness
+      // checks against the account record ({ phone: ['...already in use'] })
+      // that are keyed directly by contract key rather than by field id.
+      if (error.field_errors && typeof error.field_errors === 'object') {
+        Object.entries(error.field_errors).forEach(([key, messages]) => {
+          if (key === 'registration_data') return;
+          const message = Array.isArray(messages) ? messages[0] : String(messages);
+          if (showServerFieldError(key, message)) {
+            matchedAny = true;
+            firstInvalid = firstInvalid || fieldWrapperFor(key);
+          }
+        });
+      }
+
       if (matchedAny && firstInvalid) {
         firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } else {
